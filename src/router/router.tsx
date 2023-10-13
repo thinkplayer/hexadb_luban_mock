@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
-import DataModel from "../pages/dataModel";
+import DataModel from "../pages/DataModel";
 
 const router = createBrowserRouter([
   {

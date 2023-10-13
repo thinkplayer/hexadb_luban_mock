@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Tabs } from "@arco-design/web-react";
+
 import styles from "./index.module.less";
-import ErCanvas from "./components/ErCanvas";
-import RefResizeObserver from "rc-resize-observer";
+import "@antv/x6-react-shape";
+import CanvasWrap from "./components/CanvasWrap";
 const TabPane = Tabs.TabPane;
 let count = 5;
 const initTabs = [...new Array(count)].map((_x, i) => ({
@@ -10,10 +11,10 @@ const initTabs = [...new Array(count)].map((_x, i) => ({
   key: `key${i + 1}`,
   content: `${i + 1}`,
 }));
-const DataModel = () => {
+
+const DataModel = memo(() => {
   const [tabs, setTabs] = useState(initTabs);
   const [activeTab, setActiveTab] = useState("key2");
-  const [size, updateSize] = useState({ width: 0, height: 0 });
 
   const handleAddTab = () => {
     const newTab = {
@@ -40,10 +41,6 @@ const DataModel = () => {
     }
   };
 
-  const onResize = ({ width, height }: { width: number; height: number }) => {
-    updateSize({ width, height });
-  };
-
   return (
     <div className={styles.dataModel}>
       <Tabs
@@ -53,25 +50,15 @@ const DataModel = () => {
         onAddTab={handleAddTab}
         onDeleteTab={handleDeleteTab}
         onChange={setActiveTab}
-        className={styles.Tabs}
       >
         {tabs.map((x) => (
-          <TabPane
-            key={x.key}
-            title={x.title}
-            destroyOnHide
-            style={{ width: "100%", height: "100%" }}
-          >
-            <RefResizeObserver onResize={onResize}>
-              <div style={{ width: "100%", height: "100%" }}>
-                <ErCanvas width={size.width} height={size.height} />
-              </div>
-            </RefResizeObserver>
+          <TabPane key={x.key} title={x.title}>
+            <CanvasWrap />
           </TabPane>
         ))}
       </Tabs>
     </div>
   );
-};
+});
 
 export default DataModel;

@@ -1,15 +1,16 @@
 .dataModel {
   height: 100vh;
-
-  .Tabs {
-    height: 100%;
-
-    :global {
+  :global {
+    .arco-tabs {
+      height: 100%;
       .arco-tabs-content {
+        padding: 0;
         height: calc(100% - 32px);
-
         .arco-tabs-content-inner {
           height: 100%;
+          .arco-tabs-pane {
+            height: 100%;
+          }
         }
       }
     }

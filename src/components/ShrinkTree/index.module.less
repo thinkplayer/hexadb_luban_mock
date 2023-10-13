@@ -1,0 +1,44 @@
+.ShrinkTreeWrap {
+	position: relative;
+
+	.openIcon {
+		position: absolute;
+		left: -43px;
+		top: 50%;
+		transform: translateY(-50%) rotate(180deg);
+		z-index: 111;
+		cursor: pointer;
+		width: 56px;
+	}
+
+	.ShrinkTree {
+		position: relative;
+		height: 100%;
+		overflow: hidden;
+		transition: all ease-in-out 300ms;
+		box-sizing: border-box;
+		width: 100%;
+
+		.closeIcon {
+			position: absolute;
+			right: -5px;
+			top: 50%;
+			transform: translateY(-50%);
+			z-index: 111;
+			cursor: pointer;
+			width: 56px;
+			display: none;
+		}
+
+		&:hover {
+			.closeIcon {
+				display: block;
+			}
+		}
+
+		&.ShrinkTreeClose {
+			width: 0;
+			transition: all ease-in-out 300ms;
+		}
+	}
+}
