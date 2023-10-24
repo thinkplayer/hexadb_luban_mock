@@ -20,7 +20,6 @@ import { useMemoizedFn } from "ahooks";
 import cuid from "cuid";
 import { filterOption } from "../../../../utils/arco";
 import CellRender from "../../../../components/CellRender";
-import { mock } from "node:test";
 const FormItem = Form.Item;
 const EditableContext = React.createContext<{ getForm?: () => FormInstance }>(
   {}
@@ -106,19 +105,19 @@ export interface EditableTableInstance {
   data: any;
 }
 
-interface EditableTableProps {}
+interface EditableTableProps {
+  propsData: any[];
+}
 
 const EditableTable = forwardRef<EditableTableInstance, EditableTableProps>(
   (props, ref) => {
-    console.log("EditableTable-props: ", props);
-
+    const { propsData = [] } = props;
     useImperativeHandle(ref, () => {
       return {
         data: data,
       };
     });
 
-    const [count, setCount] = useState(2);
     const [data, setData] = useState([
       {
         key: cuid(),
@@ -176,31 +175,21 @@ const EditableTable = forwardRef<EditableTableInstance, EditableTableProps>(
     }
 
     function addRow() {
-      setCount(count + 1);
+      const randomId = cuid.slug();
       setData(
         data.concat({
           key: cuid(),
-          displayName: "属性" + count,
-          name: "attribute_" + count,
+          displayName: "属性_" + randomId,
+          name: "attribute_" + randomId,
           type: "",
-          desc: "",
+          desc: "描述_" + randomId,
         })
       );
     }
 
     useEffect(() => {
-      const mockData = [];
-      for (let i = 0; i < 5; i++) {
-        mockData.push({
-          key: cuid(),
-          displayName: "属性" + i,
-          name: "attribute_" + i,
-          type: "",
-          desc: "",
-        });
-      }
-      setData(mockData);
-    }, []);
+      setData(propsData);
+    }, [propsData]);
 
     return (
       <>

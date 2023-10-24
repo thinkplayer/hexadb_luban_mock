@@ -9,6 +9,7 @@ const CanvasWrap = () => {
   const erCanvasWrapRef = useRef<HTMLDivElement>();
   const erCanvasRef = useRef<ErCanvasInstance>();
   const entityDrawerRef = useRef<EntityDrawerInstance>();
+  const [currentEntity, setCurrentEntity] = useState(null);
 
   const [entityDrawerVisible, setEntityDrawerVisible] = useState(false);
 
@@ -24,18 +25,6 @@ const CanvasWrap = () => {
   const handleSaveEntity = useMemoizedFn(async () => {
     const data = await entityDrawerRef.current.getData();
     console.log("data: ", data);
-    const { fields } = data;
-    const graph = erCanvasRef.current.getGraph();
-    graph.addNode({
-      shape: "table",
-      width: 400,
-      height: fields.length * 41 + 30,
-      data,
-      x: 200,
-      y: 200,
-    });
-
-    setEntityDrawerVisible(false);
   });
 
   return (
@@ -51,7 +40,11 @@ const CanvasWrap = () => {
 
       <div className={styles.canvasWrap}>
         <div style={{ height: "100%", width: "100%" }} ref={erCanvasWrapRef}>
-          <ErCanvas ref={erCanvasRef} />
+          <ErCanvas
+            ref={erCanvasRef}
+            setEntityDrawerVisible={setEntityDrawerVisible}
+            setCurrentEntity={setCurrentEntity}
+          />
         </div>
       </div>
 
@@ -60,10 +53,14 @@ const CanvasWrap = () => {
         title="新建实体"
         visible={entityDrawerVisible}
         className={styles.drawerWrap}
-        onCancel={() => setEntityDrawerVisible(false)}
+        onCancel={() => {
+          setEntityDrawerVisible(false);
+          setCurrentEntity(null);
+        }}
         onOk={handleSaveEntity}
+        unmountOnExit
       >
-        <EntityDrawer ref={entityDrawerRef} />
+        <EntityDrawer propsData={currentEntity?.data} ref={entityDrawerRef} />
       </Drawer>
     </div>
   );

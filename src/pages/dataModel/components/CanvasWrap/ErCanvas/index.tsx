@@ -9,12 +9,38 @@ import {
 import styles from "./index.module.less";
 import cuid from "cuid";
 import { useMemoizedFn } from "ahooks";
-import { Graph } from "@antv/x6";
-import { registerShape } from "./registerShape";
-registerShape();
+import { Graph, Shape } from "@antv/x6";
+import ER from "./ER";
+import mockDataJson from "./mockData.json";
+import mockDataSourceJson from "./mockDataSource.json";
+import Table from "./components/table";
+import "./components/erdRelation/index";
+import { edgeNodeRemoveTool } from "./components/tools";
+console.log("mockDataSourceJson: ", mockDataSourceJson);
+console.log("mockDataJson: ", mockDataJson);
+
+Graph.registerNode("table", {
+  inherit: "react-shape",
+  zIndex: 2,
+  attrs: {
+    body: {
+      stroke: "#DFE3EB", // 边框颜色
+      strokeWidth: 2,
+      rx: 5,
+      ry: 5,
+    },
+  },
+  component: <Table />,
+});
+
 interface ErCanvasProps {
-  width?: number;
-  height?: number;
+  setEntityDrawerVisible: (visible: boolean) => void;
+  setCurrentEntity: (entities: any) => void;
+}
+
+interface DataSource {
+  relationType: string;
+  [key: string]: any;
 }
 
 export interface ErCanvasInstance {
@@ -24,7 +50,14 @@ export interface ErCanvasInstance {
 const ErCanvas = memo(
   forwardRef<ErCanvasInstance, ErCanvasProps>((props, ref) => {
     const id = useMemo(() => `luban-er-${cuid()}`, []);
-    const graphRef = useRef<Graph>();
+    const graphRef = useRef<Graph>(null);
+    const erRef = useRef<ER>(null);
+    const dataSourceRef = useRef<DataSource>();
+    dataSourceRef.current = mockDataJson;
+    const isScroll = useRef(false);
+    const isInit = useRef(false);
+    const scrollTimer = useRef(null);
+    const isDoneInit = useRef(false);
 
     useImperativeHandle(ref, () => {
       return {
@@ -32,10 +65,31 @@ const ErCanvas = memo(
       };
     });
 
+    const render = useMemoizedFn(() => {
+      if (!isInit.current) {
+        const json = erRef.current.render({
+          data: mockDataJson as any,
+          dataSource: mockDataSourceJson as any,
+        });
+        console.log("ercanvas-render-json: ", json);
+        graphRef.current.fromJSON(json);
+      }
+    });
+
+    const getDataSource = useMemoizedFn(() => {
+      return dataSourceRef.current;
+    });
+
+    const updateDataSource = useMemoizedFn((dataSource) => {
+      console.log("dataSource: ", dataSource);
+      return 1;
+    });
+
     /** 初始化 */
     const init = useMemoizedFn(() => {
+      const container = document.getElementById(id);
       const graph = new Graph({
-        container: document.getElementById(id),
+        container,
         resizing: false,
         grid: true,
         scroller: {
@@ -44,42 +98,137 @@ const ErCanvas = memo(
           autoResize: true,
           padding: 20,
         },
+        selecting: {
+          enabled: true,
+          multiple: true,
+          rubberband: true,
+          filter(node) {
+            return !node.getProp("isLock");
+          },
+          modifiers: "alt|ctrl",
+        },
         mousewheel: {
           enabled: true,
           modifiers: ["ctrl", "meta"],
           minScale: 0.3,
           maxScale: 3,
         },
-      });
-      graphRef.current = graph;
-      graph.on("node:mouseenter", ({ node }) => {
-        const { data } = node;
-        const { fields = [] } = data;
-        fields.forEach(() => {
-          node.addPort({
-            attrs: {
-              circle: {
-                r: 6,
-                magnet: true,
-                stroke: "#31d0c6",
-                fill: "#fff",
-                strokeWidth: 2,
+        highlighting: {
+          embedding: {
+            name: "stroke",
+            args: {
+              padding: -1,
+              attrs: {
+                stroke: "#4e75fd",
               },
             },
-          });
-        });
+          },
+        },
+        connecting: {
+          connectionPoint: "boundary",
+          snap: true,
+          allowBlank: false,
+          allowNode: false,
+          highlight: true,
+          createEdge() {
+            return erRef.current.createEdge();
+          },
+          validateConnection({
+            targetPort,
+            targetView,
+            sourcePort,
+            sourceCell,
+            targetCell,
+          }) {
+            if (targetCell.id === sourceCell.id) {
+              return false;
+            }
+            return erRef.current.validateConnection({
+              targetPort,
+              targetView,
+              sourceCell,
+              sourcePort,
+            });
+          },
+        },
+      });
+      graphRef.current = graph;
+      const eR = new ER({
+        graph,
+        container,
+        getDataSource,
+        relationType: dataSourceRef.current.relationType,
+        updateDataSource,
+      });
+      erRef.current = eR;
+      graph.on("render:done", () => {
+        graph.mousewheel.container.onscroll = () => {
+          isScroll.current = true;
+          if (scrollTimer.current) {
+            clearTimeout(scrollTimer.current);
+          }
+          scrollTimer.current = setTimeout(() => {
+            isScroll.current = false;
+          }, 100);
+          if (!isDoneInit.current) {
+            graphRef.current.centerContent();
+            isDoneInit.current = true;
+          }
+        };
+      });
+      graph.on("cell:click", ({ cell }) => {
+        eR.cellClick({ cell, graph, id });
+      });
+      graph.on("node:dblclick", ({ cell, e, node }) => {
+        console.log("cell: ", cell);
+        console.log("node: ", node);
+        eR.nodeDbClick({ e, cell });
+      });
+      graph.on("node:mouseenter", ({ node }) => {
+        eR.nodeMouseEnter({ node });
       });
       graph.on("node:mouseleave", ({ node }) => {
-        const ports = node.getPorts();
-        node.removePorts(ports);
+        eR.nodeMouseLeave({ node });
+      });
+      graph.on("edge:change:target", ({ edge, previous, current }) => {
+        eR.edgeChangeTarget({ edge, previous, current });
+      });
+      graph.on("edge:mouseup", ({ edge }) => {
+        eR.edgeMouseUp(edge);
+      });
+      graph.on("edge:mouseenter", ({ edge }) => {
+        eR.edgeOver({
+          edge,
+          graph,
+          id,
+          isScroll: isScroll.current,
+        });
+      });
+      graph.on("edge:mouseleave", ({ edge }) => {
+        eR.edgeLeave(edge);
+      });
+      graph.on("edge:selected", ({ edge }) => {
+        eR.edgeSelected(edge);
+      });
+      graph.on("edge:unselected", ({ edge }) => {
+        edge.removeTools();
+        edgeNodeRemoveTool(id);
       });
     });
-
     useEffect(() => {
       init();
     }, [init]);
 
-    return <div className={styles.ErCanvas} id={id}></div>;
+    useEffect(() => {
+      render();
+    }, [render]);
+
+    return (
+      <>
+        <div className={styles.ErCanvas} id={id}></div>
+        <div id={`${id}-cellTooltip`} />
+      </>
+    );
   })
 );
 
