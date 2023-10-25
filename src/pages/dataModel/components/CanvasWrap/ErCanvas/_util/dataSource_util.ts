@@ -23,6 +23,7 @@ export type MaxWidth = {
 export type DataSource = {
   entities: {
     fields: Field[];
+    viewGroups?: any[];
     [key: string]: any;
   };
   profile: {

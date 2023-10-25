@@ -6,11 +6,11 @@ interface EdgeNodeAddToolProps {
   edge: Edge;
   graph: Graph;
   id: string;
-  dataChange: any;
-  getDataSource: any;
-  updateDataSource: any;
-  relationType: string;
-  updateLayout: any;
+  dataChange?: any;
+  getDataSource?: any;
+  updateDataSource?: any;
+  relationType?: string;
+  updateLayout?: any;
 }
 
 export interface OnUpdateProps {

@@ -25,6 +25,9 @@ const CanvasWrap = () => {
   const handleSaveEntity = useMemoizedFn(async () => {
     const data = await entityDrawerRef.current.getData();
     console.log("data: ", data);
+    // TODO 更新源数据中
+    const dataSource = erCanvasRef.current.getDataSource();
+    console.log("dataSource: ", dataSource);
   });
 
   return (

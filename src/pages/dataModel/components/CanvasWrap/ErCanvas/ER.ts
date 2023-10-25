@@ -17,6 +17,7 @@ interface FilterErCellProps {
 interface NodeDbClickProps {
   e: Event;
   cell: Cell;
+  dataSource: DataSource;
 }
 
 interface NodeMouseEnterProps {
@@ -305,11 +306,19 @@ export default class ER {
     // };
     // const result = {};
   };
-  nodeDbClick = ({ e, cell }: NodeDbClickProps) => {
-    // if (this.isErCell(cell)) {
-    //   if (cell.shape === "table") {
-    //   }
-    // }
+  nodeDbClick = ({ e, cell, dataSource }: NodeDbClickProps) => {
+    if (this.isErCell(cell)) {
+      if (cell.shape === "table") {
+        const cellData = cell.getData();
+        console.log("cellData: ", cellData);
+        const key = cell.getProp("originKey");
+        const group =
+          dataSource?.viewGroups?.find((v: any) =>
+            v.refEntities?.some((r: any) => r === key)
+          )?.id || "";
+        const entityTabKey = `${key}%entity`;
+      }
+    }
   };
   nodeMouseEnter = ({ node, graph, id, isScroll }: NodeMouseEnterProps) => {
     if (this.isErCell(node)) {
@@ -329,14 +338,24 @@ export default class ER {
       isTemp: true, // 临时创建文件 无需在历史中存在
       attrs: {
         line: {
-          strokeDasharray: "5 15",
           strokeWidth: 1,
           stroke: this.currentColor.fillColor,
+          sourceMarker: {
+            relation: "1",
+            name: "relation",
+            fillColor: this.currentColor.fillColor,
+          },
+          targetMarker: {
+            relation: "1",
+            name: "relation",
+            fillColor: this.currentColor.fillColor,
+          },
         },
       },
       router: {
         name: "manhattan",
       },
+      connector: "rounded",
     });
   };
 
@@ -441,36 +460,36 @@ export default class ER {
       });
       const edgeAttrs = edge.getAttrs();
       console.log("edgeAttrs: ", edgeAttrs);
-      // edge.attr("line/sourceMarker/fillColor", this.currentColor.selected, {
-      //   ignoreHistory: true,
-      // });
-      // edge.attr("line/targetMarker/fillColor", this.currentColor.selected, {
-      //   ignoreHistory: true,
-      // });
+      edge.attr("line/sourceMarker/fillColor", this.currentColor.selected, {
+        ignoreHistory: true,
+      });
+      edge.attr("line/targetMarker/fillColor", this.currentColor.selected, {
+        ignoreHistory: true,
+      });
     }
   };
   edgeLeave = (edge: Edge) => {
     if (this.isErCell(edge)) {
       console.log("edgeLeave-edge: ", edge);
-      // const sourceNode = edge.getSourceCell();
-      // const targetNode = edge.getTargetCell();
-      // sourceNode?.setProp("sourcePort", "", { ignoreHistory: true });
-      // targetNode?.setProp("targetPort", "", { ignoreHistory: true });
-      // edge.attr(
-      //   "line/stroke",
-      //   edge.getProp("fillColor") || this.currentColor.fillColor,
-      //   { ignoreHistory: true }
-      // );
-      // edge.attr(
-      //   "line/sourceMarker/fillColor",
-      //   edge.getProp("fillColor") || this.currentColor.fillColor,
-      //   { ignoreHistory: true }
-      // );
-      // edge.attr(
-      //   "line/targetMarker/fillColor",
-      //   edge.getProp("fillColor") || this.currentColor.fillColor,
-      //   { ignoreHistory: true }
-      // );
+      const sourceNode = edge.getSourceCell();
+      const targetNode = edge.getTargetCell();
+      sourceNode?.setProp("sourcePort", "", { ignoreHistory: true });
+      targetNode?.setProp("targetPort", "", { ignoreHistory: true });
+      edge.attr(
+        "line/stroke",
+        edge.getProp("fillColor") || this.currentColor.fillColor,
+        { ignoreHistory: true }
+      );
+      edge.attr(
+        "line/sourceMarker/fillColor",
+        edge.getProp("fillColor") || this.currentColor.fillColor,
+        { ignoreHistory: true }
+      );
+      edge.attr(
+        "line/targetMarker/fillColor",
+        edge.getProp("fillColor") || this.currentColor.fillColor,
+        { ignoreHistory: true }
+      );
     }
   };
   edgeSelected = (edge: Edge) => {
@@ -509,6 +528,7 @@ export default class ER {
   };
   cellClick = ({ cell, graph, id }: CellClickProps) => {
     if (this.isErCell(cell)) {
+      if (!cell.isEdge()) return;
       edgeNodeAddTool({
         edge: cell,
         graph,

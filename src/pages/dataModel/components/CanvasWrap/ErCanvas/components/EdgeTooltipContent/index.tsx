@@ -1,11 +1,12 @@
 import { Edge } from "@antv/x6";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { OnUpdateProps } from "../tools";
 import { Icon, Tooltip } from "@arco-design/web-react";
 import OverDown from "../OverDown";
 import ColorEdit from "../ColorEdit";
 import Svg from "../Svg";
-import { IconSwap } from "@arco-design/web-react/icon";
+import { IconCheck, IconSwap } from "@arco-design/web-react/icon";
+import { right } from "@antv/x6/lib/registry/port-layout/line";
 export interface EdgeTooltipContentProps {
   id: string;
   position: {
@@ -42,22 +43,15 @@ const EdgeTooltipContent = (props: EdgeTooltipContentProps) => {
         edge.attr("line/strokeDasharray") === "5 5"
           ? "dotted-large"
           : "#icon-stroke-line1",
-      // eslint-disable-next-line no-nested-ternary
       lineType:
         edge.getProp("router")?.name === "normal"
           ? "straight"
-          : edge.getProp("connector")?.name === "rounded"
+          : (edge.getProp("connector") || edge.getProp("connector")?.name) ===
+            "rounded"
           ? "fillet"
           : "polyline",
     };
   });
-  const arrowType = [
-    "none",
-    "triangle-stroke",
-    "triangle-fill",
-    "right",
-    "concave",
-  ];
   const erArrowType = ["1", "n"];
   const lineType = ["straight", "polyline", "fillet"];
   const lineStyle = ["#icon-stroke-line1", "dotted-large"];
@@ -141,7 +135,7 @@ const EdgeTooltipContent = (props: EdgeTooltipContentProps) => {
     }
     return (
       <div className={`luban-edge-tooltip-content-item-data-arrow`}>
-        {arrowType.concat(erArrowType).map((a) => {
+        {erArrowType.map((a) => {
           return (
             <div
               className={
@@ -152,15 +146,7 @@ const EdgeTooltipContent = (props: EdgeTooltipContentProps) => {
               key={a}
               onClick={() => _onUpdate({ type: "relation", value: a, reverse })}
             >
-              <div>
-                <Icon
-                  style={{
-                    visibility:
-                      a === arrowState[reverse ? 0 : 1] ? "visible" : "hidden",
-                  }}
-                  type="fa-check"
-                />
-              </div>
+              <div>{a === arrowState[reverse ? 0 : 1] && <IconCheck />}</div>
               <Svg reverse={reverse} type={a} />
             </div>
           );

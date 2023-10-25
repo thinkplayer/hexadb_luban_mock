@@ -18,6 +18,7 @@ export interface EntityDrawerProps {
 
 const EntityDrawer = forwardRef<EntityDrawerInstance, EntityDrawerProps>(
   (props, ref) => {
+    console.log("EntityDrawer-props: ", props);
     const { propsData } = props;
     const [form] = useForm();
     const EditableTableRef = useRef<EditableTableInstance>();
@@ -37,7 +38,11 @@ const EntityDrawer = forwardRef<EntityDrawerInstance, EntityDrawerProps>(
     });
 
     const initData = useMemoizedFn(() => {
-      form.setFieldsValue(propsData);
+      const { defKey: name, defName: displayName } = propsData || {};
+      form.setFieldsValue({
+        name,
+        displayName,
+      });
     });
 
     useEffect(() => {

@@ -9,7 +9,7 @@ import {
 import styles from "./index.module.less";
 import cuid from "cuid";
 import { useMemoizedFn } from "ahooks";
-import { Graph, Shape } from "@antv/x6";
+import { Graph } from "@antv/x6";
 import ER from "./ER";
 import mockDataJson from "./mockData.json";
 import mockDataSourceJson from "./mockDataSource.json";
@@ -45,10 +45,12 @@ interface DataSource {
 
 export interface ErCanvasInstance {
   getGraph: () => Graph;
+  getDataSource: () => any;
 }
 
 const ErCanvas = memo(
   forwardRef<ErCanvasInstance, ErCanvasProps>((props, ref) => {
+    const { setEntityDrawerVisible, setCurrentEntity } = props;
     const id = useMemo(() => `luban-er-${cuid()}`, []);
     const graphRef = useRef<Graph>(null);
     const erRef = useRef<ER>(null);
@@ -62,6 +64,7 @@ const ErCanvas = memo(
     useImperativeHandle(ref, () => {
       return {
         getGraph: () => graphRef.current,
+        getDataSource: () => dataSourceRef.current,
       };
     });
 
@@ -179,10 +182,20 @@ const ErCanvas = memo(
       graph.on("cell:click", ({ cell }) => {
         eR.cellClick({ cell, graph, id });
       });
-      graph.on("node:dblclick", ({ cell, e, node }) => {
+      graph.on("node:dblclick", ({ cell, node }) => {
         console.log("cell: ", cell);
         console.log("node: ", node);
-        eR.nodeDbClick({ e, cell });
+        if (cell.shape === "table") {
+          const data = cell.getData();
+          console.log("data: ", data);
+          cell.data.fields.forEach((item: any) => {
+            item.key = item.defKey;
+            item.name = item.defKey;
+            item.displayName = item.defName;
+          });
+          setCurrentEntity?.(cell);
+          setEntityDrawerVisible?.(true);
+        }
       });
       graph.on("node:mouseenter", ({ node }) => {
         eR.nodeMouseEnter({ node });
