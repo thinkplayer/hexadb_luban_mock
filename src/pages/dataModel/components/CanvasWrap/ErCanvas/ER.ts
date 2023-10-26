@@ -1,6 +1,13 @@
 import { Cell, CellView, Edge, Graph, Node, Shape } from "@antv/x6";
-import { DataSource, Field, calcCellData } from "./_util/dataSource_util";
+import {
+  DataSource,
+  Field,
+  calcCellData,
+  mapData2Table,
+} from "./_util/dataSource_util";
 import { edgeNodeAddTool } from "./components/tools";
+import cuid from "cuid";
+import { Message } from "@arco-design/web-react";
 
 interface ERConstructorProps {
   graph: Graph;
@@ -73,6 +80,11 @@ interface CellClickProps {
   cell: Cell | Node;
   graph: Graph;
   id: string;
+}
+
+interface EdgeConnectedProps {
+  args: any;
+  dataSource: any;
 }
 
 export const DEFAULT_EDIT_NODE_SIZE = {
@@ -301,26 +313,43 @@ export default class ER {
     };
   };
   updateFields = ({ originKey, fields }: UpdateFieldsProps) => {
-    // const getKey = (f: Field) => {
-    //   return `${f.defKey}${f.defName}`;
-    // };
-    // const result = {};
+    const getKey = (f: Field) => {
+      return `${f.defKey}${f.defName}`;
+    };
+    const result: any = {};
+    const currentDataSource = this.getDataSource();
+    const newDataSource = {
+      ...currentDataSource,
+      entities: currentDataSource.entities.map((e: any) => {
+        if (e.id === originKey) {
+          const success = fields.filter(
+            (f) =>
+              (e.fields || []).findIndex(
+                (eFiled: any) => getKey(eFiled) === getKey(f)
+              ) < 0
+          );
+          result.success = success.length;
+          result.hidden = success.filter((f) => f.hideInGraph).length;
+          return {
+            ...e,
+            // eslint-disable-next-line max-len
+            fields: (e.fields || []).concat(
+              success.map((s) => ({
+                ...s,
+                id: cuid(),
+                isStandard: true,
+                refStandard: s.id,
+              }))
+            ),
+          };
+        }
+        return e;
+      }),
+    };
+    this.updateDataSource && this.updateDataSource(newDataSource);
   };
-  nodeDbClick = ({ e, cell, dataSource }: NodeDbClickProps) => {
-    if (this.isErCell(cell)) {
-      if (cell.shape === "table") {
-        const cellData = cell.getData();
-        console.log("cellData: ", cellData);
-        const key = cell.getProp("originKey");
-        const group =
-          dataSource?.viewGroups?.find((v: any) =>
-            v.refEntities?.some((r: any) => r === key)
-          )?.id || "";
-        const entityTabKey = `${key}%entity`;
-      }
-    }
-  };
-  nodeMouseEnter = ({ node, graph, id, isScroll }: NodeMouseEnterProps) => {
+  nodeDbClick = ({ e, cell, dataSource }: NodeDbClickProps) => {};
+  nodeMouseEnter = ({ node }: NodeMouseEnterProps) => {
     if (this.isErCell(node)) {
       if (!this.graph.isSelected(node) || node.shape === "table") {
         this.changePortsVisible({ node, visible: true });
@@ -376,6 +405,45 @@ export default class ER {
       groups: this.getTableGroup(),
     });
   };
+
+  update = (dataSource: any) => {
+    console.log("update-dataSource: ", dataSource);
+    const cells = this.graph.getCells();
+    this.graph.batchUpdate("update", () => {
+      cells
+        .filter((c) => c.shape === "table")
+        .forEach((c: any) => {
+          const { size, ports, ...rest } =
+            mapData2Table({
+              n: {
+                ...c,
+                originKey: c.data.id,
+                ports: c.ports,
+                data: c.getProp("data"),
+                size: c.size(),
+                autoSize: c.getProp("autoSize"),
+              },
+              dataSource,
+              updateFields: this.updateFields,
+              groups: this.getTableGroup(),
+              commonEntityPorts: this.commonEntityPorts,
+              commonPorts: this.commonPorts,
+              nodeClickText: this.nodeTextClick,
+              relationType: this.relationType,
+            }) || {};
+          console.log("update-size: ", size, c.data.defName);
+          if (size) {
+            // 需要取消撤销重做的记录
+            console.log("rest.data: ", rest.data);
+            c.setProp("data", rest.data, { ignoreHistory: true });
+            c.setProp("size", size, { ignoreHistory: true });
+            c.setProp("ports", ports, { ignoreHistory: true });
+          } else {
+            this.graph.removeCell(c, { ignoreHistory: true });
+          }
+        });
+    });
+  };
   changePortsVisible = ({ visible, node, source }: ChangePortsVisibleProps) => {
     const currentNodeDom = node
       ? Array.from(this.container.querySelectorAll(".x6-node")).find((n) => {
@@ -414,6 +482,87 @@ export default class ER {
       });
     }
   };
+  edgeConnected = ({ args, dataSource }: EdgeConnectedProps) => {
+    const edge = args.edge;
+    console.log("edgeConnected-edge: ", edge);
+    if (this.isErCell(edge) && edge.getProp("isTemp")) {
+      this.graph.batchUpdate("createEdge", () => {
+        const node = this.graph.getCellById(edge.target.cell);
+        const sourceNode = this.graph.getCellById(edge.source.cell);
+        const fillColor =
+          sourceNode.getProp("fillColor") || this.currentColor.fillColor;
+        const newEdge = edge.clone();
+        newEdge.setProp("isTemp", false);
+        newEdge.setProp(
+          "relation",
+          node.shape === "table" ? "1:n" : "none:concave"
+        );
+        newEdge.setProp("fillColor", fillColor);
+        newEdge.attr({
+          line: {
+            stroke: fillColor,
+            strokeDasharray: "",
+            sourceMarker: {
+              fillColor,
+              name: "relation",
+              relation: node.shape === "table" ? "1" : "none",
+            },
+            targetMarker: {
+              fillColor,
+              name: "relation",
+              relation: node.shape === "table" ? "n" : "concave",
+            },
+          },
+        });
+        this.graph.addEdge(newEdge);
+        this.graph.removeCell(edge);
+        const calcPorts = (port: any, calcNode: any) => {
+          const incomingEdges = this.graph.getIncomingEdges(calcNode) || [];
+          const outgoingEdges = this.graph.getOutgoingEdges(calcNode) || [];
+          const usedPorts = incomingEdges
+            .map((e) => {
+              return e.getTargetPortId();
+            })
+            .concat(
+              outgoingEdges.map((e) => {
+                return e.getSourcePortId();
+              })
+            );
+          const currentGroup = /(\d+)/g.test(port)
+            ? port.match(/[A-Za-z]+/g)[0]
+            : port;
+          const currentGroupPorts = calcNode
+            .getPorts()
+            .filter((p: any) => p.group === currentGroup)
+            .map((p: any) => p.id);
+          if (
+            currentGroupPorts.length ===
+            [...new Set(usedPorts.filter((p) => p.includes(currentGroup)))]
+              .length
+          ) {
+            calcNode.addPort({
+              id: `${currentGroup}${currentGroupPorts.length + 1}`,
+              group: currentGroup,
+            });
+          }
+        };
+        if (
+          node.shape === "edit-node" ||
+          (this.relationType === "entity" && node.shape === "table")
+        ) {
+          // 判断输入锚点是否已经用完
+          calcPorts(edge.target.port, node);
+        }
+        if (
+          sourceNode.shape === "edit-node" ||
+          (this.relationType === "entity" && node.shape === "table")
+        ) {
+          // 判断输出锚点是否已经用完
+          calcPorts(edge.source.port, sourceNode);
+        }
+      });
+    }
+  };
   validateConnection = ({
     targetPort,
     targetView,
@@ -440,12 +589,12 @@ export default class ER {
     if (this.isErCell(edge)) {
       const target = edge.getTargetCell();
       const source = edge.getSourceCell();
-      target.setProp("targetPort", "", { ignoreHistory: true });
-      source.setProp("targetPort", "", { ignoreHistory: true });
+      target?.setProp("targetPort", "", { ignoreHistory: true });
+      source?.setProp("targetPort", "", { ignoreHistory: true });
       this.changePortsVisible({ visible: false });
     }
   };
-  edgeOver = ({ edge, graph, id, isScroll }: EdgeOverProps) => {
+  edgeOver = ({ edge }: EdgeOverProps) => {
     if (this.isErCell(edge)) {
       const sourceNode = edge.getSourceCell();
       const targetNode = edge.getTargetCell();

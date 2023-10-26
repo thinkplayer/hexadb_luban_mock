@@ -12,11 +12,9 @@ import { useMemoizedFn } from "ahooks";
 import { Graph } from "@antv/x6";
 import ER from "./ER";
 import mockDataJson from "./mockData.json";
-import mockDataSourceJson from "./mockDataSource.json";
 import Table from "./components/table";
 import "./components/erdRelation/index";
 import { edgeNodeRemoveTool } from "./components/tools";
-console.log("mockDataSourceJson: ", mockDataSourceJson);
 console.log("mockDataJson: ", mockDataJson);
 
 Graph.registerNode("table", {
@@ -36,6 +34,7 @@ Graph.registerNode("table", {
 interface ErCanvasProps {
   setEntityDrawerVisible: (visible: boolean) => void;
   setCurrentEntity: (entities: any) => void;
+  dataSource: any;
 }
 
 interface DataSource {
@@ -46,11 +45,13 @@ interface DataSource {
 export interface ErCanvasInstance {
   getGraph: () => Graph;
   getDataSource: () => any;
+  setDataSource: (data: any) => any;
+  update: (dataSource: any) => any;
 }
 
 const ErCanvas = memo(
   forwardRef<ErCanvasInstance, ErCanvasProps>((props, ref) => {
-    const { setEntityDrawerVisible, setCurrentEntity } = props;
+    const { setEntityDrawerVisible, setCurrentEntity, dataSource } = props;
     const id = useMemo(() => `luban-er-${cuid()}`, []);
     const graphRef = useRef<Graph>(null);
     const erRef = useRef<ER>(null);
@@ -65,6 +66,11 @@ const ErCanvas = memo(
       return {
         getGraph: () => graphRef.current,
         getDataSource: () => dataSourceRef.current,
+        setDataSource: (data: any) => {
+          dataSourceRef.current = data;
+          render();
+        },
+        update: (dataSource: any) => erRef.current.update(dataSource),
       };
     });
 
@@ -72,10 +78,14 @@ const ErCanvas = memo(
       if (!isInit.current) {
         const json = erRef.current.render({
           data: mockDataJson as any,
-          dataSource: mockDataSourceJson as any,
+          dataSource: dataSource as any,
         });
         console.log("ercanvas-render-json: ", json);
         graphRef.current.fromJSON(json);
+        isInit.current = true;
+      } else {
+        console.log("render-dataSourceRef.current: ", dataSourceRef.current);
+        erRef.current.update(dataSourceRef.current);
       }
     });
 
@@ -226,6 +236,9 @@ const ErCanvas = memo(
       graph.on("edge:unselected", ({ edge }) => {
         edge.removeTools();
         edgeNodeRemoveTool(id);
+      });
+      graph.on("edge:connected", (args) => {
+        eR.edgeConnected({ args, dataSource: dataSource });
       });
     });
     useEffect(() => {

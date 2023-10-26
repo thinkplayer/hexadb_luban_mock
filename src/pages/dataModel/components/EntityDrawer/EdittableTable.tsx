@@ -118,15 +118,7 @@ const EditableTable = forwardRef<EditableTableInstance, EditableTableProps>(
       };
     });
 
-    const [data, setData] = useState([
-      {
-        key: cuid(),
-        displayName: "属性1",
-        name: "attribute_1",
-        type: "int",
-        desc: "desc",
-      },
-    ]);
+    const [data, setData] = useState([]);
 
     const columns = [
       {
@@ -174,7 +166,7 @@ const EditableTable = forwardRef<EditableTableInstance, EditableTableProps>(
       setData(data.filter((item) => item.key !== key));
     }
 
-    function addRow() {
+    const addRow = useMemoizedFn(() => {
       const randomId = cuid.slug();
       setData(
         data.concat({
@@ -185,11 +177,15 @@ const EditableTable = forwardRef<EditableTableInstance, EditableTableProps>(
           desc: "描述_" + randomId,
         })
       );
-    }
+    });
 
     useEffect(() => {
-      setData(propsData);
-    }, [propsData]);
+      if (propsData.length) {
+        setData(propsData);
+      } else {
+        addRow();
+      }
+    }, [addRow, propsData]);
 
     return (
       <>

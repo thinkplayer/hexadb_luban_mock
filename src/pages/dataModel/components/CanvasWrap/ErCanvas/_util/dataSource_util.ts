@@ -1,5 +1,4 @@
 import { Cell } from "@antv/x6";
-import { DEFAULT_EDIT_NODE_SIZE } from "../ER";
 import { PortManager } from "@antv/x6/lib/model/port";
 import { Edge, Node, Node as NodeManager } from "@antv/x6/lib/model";
 
@@ -103,8 +102,6 @@ export const calcCellData = ({
   relationType,
   nodeClickText,
 }: CalcCellDataProps) => {
-  const defaultEditNodeSize = { ...DEFAULT_EDIT_NODE_SIZE };
-
   console.log("calcCellData-cells: ", cells);
   const nodes = cells
     .filter((c) => c.shape === "table")
@@ -140,8 +137,9 @@ export const mapData2Table = ({
   commonEntityPorts,
   nodeClickText,
 }: MapData2TableProps) => {
-  console.log("mapData2Table-props: ", { n, dataSource, groups });
+  console.log("mapData2Table-props: ", { n, dataSource, groups, relationType });
   const nodeData = dataSource?.entities?.find((e: any) => e.id === n.originKey);
+  console.log("mapData2Table-nodeData: ", nodeData);
   if (nodeData) {
     const { width, height, ports, fields, headers, maxWidth, originWidth } =
       calcNodeData({
@@ -151,6 +149,9 @@ export const mapData2Table = ({
         groups,
       });
 
+    const portss =
+      relationType === "entity" ? n.port || commonEntityPorts : ports;
+    console.log("portss: ", portss);
     return {
       ...n,
       size: {
@@ -242,12 +243,14 @@ export const calcNodeData = ({
       return repeat.filter((r) => r.defKey === d.defKey).length === 1;
     });
   };
-  const realWidth = size?.width || width;
-  const realHeight = size?.height || height;
+  const realWidth = width;
+  const realHeight = height;
   let sliceCount = -1;
   if (size) {
     sliceCount = Math.floor((size.height - 31) / 23) * 2;
   }
+  const filterFieldsRes = filterFields(fields);
+  console.log("filterFieldsRes: ", filterFieldsRes);
   const ports = groups
     ? {
         groups,
@@ -258,11 +261,12 @@ export const calcNodeData = ({
                 {
                   group: "in",
                   args: { x: 0, y: 38 + i * 23 },
-                  id: `${b.id}%in`,
+                  id: `${b.defKey}%in`,
                 },
                 {
                   group: "out",
                   args: { x: 0 + realWidth, y: 38 + i * 23 },
+                  id: `${b.defKey}%out`,
                 },
               ],
               []
@@ -276,7 +280,7 @@ export const calcNodeData = ({
                       magnet: true,
                       style: {
                         // 隐藏锚点
-                        opacity: 0,
+                        // opacity: 0,
                       },
                     },
                   },

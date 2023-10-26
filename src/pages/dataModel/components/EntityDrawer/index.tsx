@@ -46,7 +46,7 @@ const EntityDrawer = forwardRef<EntityDrawerInstance, EntityDrawerProps>(
     });
 
     useEffect(() => {
-      initData();
+      propsData && initData();
     }, [initData, propsData]);
 
     const randomId = cuid.slug();
