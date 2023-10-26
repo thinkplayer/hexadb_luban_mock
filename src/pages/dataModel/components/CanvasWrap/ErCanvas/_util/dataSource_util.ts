@@ -1,6 +1,7 @@
 import { Cell } from "@antv/x6";
 import { PortManager } from "@antv/x6/lib/model/port";
 import { Edge, Node, Node as NodeManager } from "@antv/x6/lib/model";
+import cuid from "cuid";
 
 export type Header = {
   refKey: string;
@@ -51,7 +52,7 @@ export interface MapData2TableProps {
   nodeClickText: any;
 }
 export interface CalcNodeDataProps {
-  nodeData: NodeData;
+  nodeData: NodeData | any;
   dataSource: DataSource;
   groups: PortManager.Metadata["groups"];
   n: {
@@ -184,7 +185,7 @@ export const calcNodeData = ({
   const preData = n.data;
   const headers = (nodeData.headers || []).filter((h) => {
     const columnOthers: any =
-      (dataSource.profile.headers || []).find((c) => c.refKey === h.refKey) ||
+      (dataSource?.profile?.headers || []).find((c) => c.refKey === h.refKey) ||
       {};
     return !h.hideInGraph && columnOthers.enabled !== false;
   });
@@ -381,4 +382,147 @@ export const getPresetColors = () => {
     "rgb(35, 156, 163)",
     "rgb(154, 72, 199)",
   ];
+};
+
+export const getEmptyEntity = (fields: any[] = [], properties = {}) => {
+  return {
+    id: cuid(),
+    env: {
+      base: {
+        nameSpace: "",
+        codeRoot: "",
+      },
+    },
+    defKey: "",
+    defName: "",
+    comment: "",
+    properties,
+    nameTemplate: "{defKey}[{defName}]",
+    notes: {},
+    headers: getFullColumns().map((h) => ({
+      freeze: !!(h.newCode === "defKey" || h.newCode === "defName"),
+      refKey: h.newCode,
+      hideInGraph: h.relationNoShow,
+    })),
+    fields,
+    correlations: [],
+    indexes: [],
+  };
+};
+
+export const getFullColumns = () => {
+  return [
+    {
+      code: "relationNoShow",
+      value: "关系图",
+      newCode: "hideInGraph",
+      com: "Icon",
+      relationNoShow: true,
+    },
+    {
+      code: "name",
+      value: "字段代码",
+      newCode: "defKey",
+      com: "Input",
+      relationNoShow: false,
+    },
+    {
+      code: "chnname",
+      value: "显示名称",
+      newCode: "defName",
+      com: "Input",
+      relationNoShow: false,
+    },
+    {
+      code: "pk",
+      value: "主键",
+      newCode: "primaryKey",
+      com: "Checkbox",
+      relationNoShow: false,
+    },
+    {
+      code: "notNull",
+      value: "不为空",
+      newCode: "notNull",
+      com: "Checkbox",
+      relationNoShow: true,
+    },
+    {
+      code: "autoIncrement",
+      value: "自增",
+      newCode: "autoIncrement",
+      com: "Checkbox",
+      relationNoShow: true,
+    },
+    {
+      code: "type",
+      value: "数据域",
+      newCode: "domain",
+      com: "Select",
+      relationNoShow: true,
+    },
+    {
+      code: "dataType",
+      value: "数据类型",
+      newCode: "type",
+      com: "Text",
+      relationNoShow: false,
+    },
+    {
+      code: "len",
+      value: "长度",
+      newCode: "len",
+      com: "Input",
+      relationNoShow: false,
+    },
+    {
+      code: "scale",
+      value: "小数位数",
+      newCode: "scale",
+      com: "Input",
+      relationNoShow: false,
+    },
+    {
+      code: "remark",
+      value: "说明",
+      newCode: "comment",
+      com: "Input",
+      relationNoShow: true,
+    },
+    {
+      code: "refDict",
+      value: "数据字典",
+      newCode: "refDict",
+      com: "SearchSelect",
+      relationNoShow: true,
+    },
+    {
+      code: "defaultValue",
+      value: "默认值",
+      newCode: "defaultValue",
+      com: "Input",
+      relationNoShow: true,
+    },
+    {
+      code: "isStandard",
+      value: "标准字段",
+      newCode: "isStandard",
+      com: "label",
+      relationNoShow: false,
+    },
+    {
+      code: "uiHint",
+      value: "UI建议",
+      newCode: "uiHint",
+      com: "Select",
+      relationNoShow: true,
+    },
+    {
+      code: "extProps",
+      value: "拓展属性",
+      newCode: "extProps",
+      com: "linkButton",
+      relationNoShow: true,
+    },
+  ]; // 完整的头部信息
 };

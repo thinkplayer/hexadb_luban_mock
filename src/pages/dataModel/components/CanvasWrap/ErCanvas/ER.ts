@@ -3,11 +3,12 @@ import {
   DataSource,
   Field,
   calcCellData,
+  calcNodeData,
+  getEmptyEntity,
   mapData2Table,
 } from "./_util/dataSource_util";
 import { edgeNodeAddTool } from "./components/tools";
 import cuid from "cuid";
-import { Message } from "@arco-design/web-react";
 
 interface ERConstructorProps {
   graph: Graph;
@@ -348,7 +349,7 @@ export default class ER {
     };
     this.updateDataSource && this.updateDataSource(newDataSource);
   };
-  nodeDbClick = ({ e, cell, dataSource }: NodeDbClickProps) => {};
+  nodeDbClick = () => {};
   nodeMouseEnter = ({ node }: NodeMouseEnterProps) => {
     if (this.isErCell(node)) {
       if (!this.graph.isSelected(node) || node.shape === "table") {
@@ -405,7 +406,42 @@ export default class ER {
       groups: this.getTableGroup(),
     });
   };
-
+  addNewEntity = (formData: any) => {
+    const { name, displayName } = formData;
+    const empty = {
+      ...getEmptyEntity(),
+      defName: displayName,
+      defKey: name,
+      fields: formData.fields,
+    };
+    const { width, height, originWidth, fields, headers, maxWidth, ports } =
+      calcNodeData({
+        n: empty as any,
+        nodeData: empty,
+        dataSource: this.getDataSource(),
+        groups: this.getTableGroup(),
+      });
+    const node = this.graph.createNode({
+      size: {
+        width,
+        height,
+      },
+      shape: "table",
+      ports: this.relationType === "entity" ? this.commonEntityPorts : ports,
+      originKey: empty.id,
+      updateFields: this.updateFields,
+      nodeClickText: this.nodeTextClick,
+      data: {
+        ...empty,
+        fields,
+        headers,
+        maxWidth,
+        originWidth,
+      },
+    });
+    this.graph.addNode(node);
+    return node.data;
+  };
   update = (dataSource: any) => {
     console.log("update-dataSource: ", dataSource);
     const cells = this.graph.getCells();
@@ -482,7 +518,7 @@ export default class ER {
       });
     }
   };
-  edgeConnected = ({ args, dataSource }: EdgeConnectedProps) => {
+  edgeConnected = ({ args }: EdgeConnectedProps) => {
     const edge = args.edge;
     console.log("edgeConnected-edge: ", edge);
     if (this.isErCell(edge) && edge.getProp("isTemp")) {

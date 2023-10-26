@@ -47,6 +47,7 @@ export interface ErCanvasInstance {
   getDataSource: () => any;
   setDataSource: (data: any) => any;
   update: (dataSource: any) => any;
+  addNewEntity: (formData: any) => any;
 }
 
 const ErCanvas = memo(
@@ -71,6 +72,7 @@ const ErCanvas = memo(
           render();
         },
         update: (dataSource: any) => erRef.current.update(dataSource),
+        addNewEntity: (formData: any) => erRef.current.addNewEntity(formData),
       };
     });
 

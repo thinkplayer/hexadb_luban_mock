@@ -12,6 +12,7 @@ const CanvasWrap = () => {
   const erCanvasRef = useRef<ErCanvasInstance>();
   const entityDrawerRef = useRef<EntityDrawerInstance>();
   const [currentEntity, setCurrentEntity] = useState<Cell>(null);
+  const dataSourceRef = useRef(dataSource);
 
   const [entityDrawerVisible, setEntityDrawerVisible] = useState(false);
 
@@ -37,33 +38,23 @@ const CanvasWrap = () => {
       erCanvasRef.current.getDataSource()
     );
     // TODO 更新源数据中
-    console.log("handleSaveEntity-dataSource: ", dataSource);
+    console.log("handleSaveEntity-dataSource: ", dataSourceRef.current);
     console.log("handleSaveEntity-currentEntity: ", currentEntity);
     if (currentEntity) {
       // 编辑实体
-      dataSource.entities.forEach((item) => {
+      dataSourceRef.current.entities.forEach((item) => {
         if (item.id === currentEntity.data.id) {
           item.fields = data.fields;
         }
       });
+      erCanvasRef.current.update(dataSourceRef.current);
     } else {
       // 新增实体
-      const data = erCanvasRef.current.getDataSource();
-      console.log("handleSaveEntity-data: ", data);
-      // erCanvasRef.current.getGraph().addNode({
-      //   id: "c5ccdc76-b8e3-438f-bc7c-ed92a10e7346",
-      //   shape: "table",
-      //   position: {
-      //     x: -193.99999999999943,
-      //     y: 149.99999999999915,
-      //   },
-      //   count: 0,
-      //   originKey: "0FC9DB49-4FDB-437E-83E9-7EE803F1CC84",
-      //   fillColor: "rgb(183, 185, 189)",
-      // });
+      const nodeData = erCanvasRef.current.addNewEntity(data);
+      console.log("新增实体-handleSaveEntity-nodeData: ", nodeData);
+      dataSourceRef.current.entities.push(nodeData);
     }
 
-    erCanvasRef.current.update(dataSource);
     setEntityDrawerVisible(false);
   });
 
