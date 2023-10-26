@@ -7293,7 +7293,7 @@
         "map keys terminated by ':'": "",
         "store as textfile;": ""
       },
-      "nameTemplate": "{defKey}[{defName}]",
+      "nameTemplate": "{defKey}({defName})",
       "notes": {},
       "headers": [
         {
@@ -7676,7 +7676,7 @@
         "map keys terminated by ':'": "",
         "store as textfile;": ""
       },
-      "nameTemplate": "{defKey}[{defName}]",
+      "nameTemplate": "{defKey}({defName})",
       "notes": {},
       "headers": [
         {

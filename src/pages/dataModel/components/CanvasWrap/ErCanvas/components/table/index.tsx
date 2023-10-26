@@ -32,7 +32,6 @@ const Table = forwardRef<TableInstance, TableProps>(({ node }, ref) => {
   const store = (node as any).store;
   const id = node.id;
   const size = node.size();
-  const linkData = JSON.parse(node.getProp("link") || "{}");
   const allFk =
     node?.model
       ?.getIncomingEdges(id)
@@ -44,11 +43,6 @@ const Table = forwardRef<TableInstance, TableProps>(({ node }, ref) => {
     (store?.data as ER)?.updateFields({
       originKey: store.data.originKey,
       fields: JSON.parse(e.dataTransfer.getData("fields")),
-    });
-  };
-  const nodeClickText = () => {
-    (store?.data as ER)?.nodeTextClick({
-      node,
     });
   };
   const validateSelected = ({ field, nodeData }: ValidateSelectedProps) => {
@@ -206,6 +200,5 @@ const Table = forwardRef<TableInstance, TableProps>(({ node }, ref) => {
     </div>
   );
 });
-console.log("Table: ", Table);
 
 export default Table;

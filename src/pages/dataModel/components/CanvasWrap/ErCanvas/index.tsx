@@ -9,13 +9,138 @@ import {
 import styles from "./index.module.less";
 import cuid from "cuid";
 import { useMemoizedFn } from "ahooks";
-import { Graph } from "@antv/x6";
+import { EdgeView, Graph, Node, ToolsView } from "@antv/x6";
 import ER from "./ER";
 import mockDataJson from "./mockData.json";
 import Table from "./components/table";
 import "./components/erdRelation/index";
 import { edgeNodeRemoveTool } from "./components/tools";
-console.log("mockDataJson: ", mockDataJson);
+import { Dropdown, Menu } from "@arco-design/web-react";
+import ReactDOM from "react-dom";
+import { cloneDeep } from "@antv/x6/lib/util/object/object";
+
+export interface ContextMenuToolOptions extends ToolsView.ToolItem.Options {
+  menu: React.ReactElement;
+}
+
+let curEntity: Node = null;
+const copyNum: { [key: string]: number } = {};
+
+class ContextMenuTool extends ToolsView.ToolItem<
+  EdgeView,
+  ContextMenuToolOptions
+> {
+  private knob: HTMLDivElement;
+  private timer: number;
+
+  render() {
+    if (!this.knob) {
+      this.knob = ToolsView.createElement("div", false) as HTMLDivElement;
+      this.knob.style.position = "absolute";
+      this.container.appendChild(this.knob);
+    }
+    return this;
+  }
+
+  private toggleContextMenu(visible: boolean) {
+    ReactDOM.unmountComponentAtNode(this.knob);
+    document.removeEventListener("mousedown", this.onMouseDown);
+
+    if (visible) {
+      ReactDOM.render(
+        <Dropdown
+          popupVisible={true}
+          trigger={["contextMenu"]}
+          droplist={this.options.menu}
+        >
+          <a />
+        </Dropdown>,
+        this.knob
+      );
+      document.addEventListener("mousedown", this.onMouseDown);
+    }
+  }
+
+  private updatePosition(e?: MouseEvent) {
+    const style = this.knob.style;
+    if (e) {
+      const pos = this.graph.clientToGraph(e.clientX, e.clientY);
+      style.left = `${pos.x}px`;
+      style.top = `${pos.y}px`;
+    } else {
+      style.left = "-1000px";
+      style.top = "-1000px";
+    }
+  }
+
+  private onMouseDown = (e: any) => {
+    console.log("e: ", e);
+    this.timer = window.setTimeout(() => {
+      this.updatePosition();
+
+      const innerHTML = e.target.innerHTML;
+      if (innerHTML.includes("删除")) {
+        this.graph.removeNode(curEntity);
+      } else if (innerHTML.includes("复制实体")) {
+        console.log("curEntity: ", curEntity);
+        if (!copyNum[curEntity.id]) {
+          copyNum[curEntity.id] = 1;
+        } else {
+          copyNum[curEntity.id]++;
+        }
+        const cloneCurEntityData = cloneDeep(curEntity.getData());
+        console.log("cloneCurEntityData: ", cloneCurEntityData);
+        cloneCurEntityData.defKey = `${cloneCurEntityData.defKey}_${
+          copyNum[curEntity.id]
+        }`;
+        cloneCurEntityData.defName = `${cloneCurEntityData.defName}_${
+          copyNum[curEntity.id]
+        }`;
+        this.graph.copy([curEntity], {
+          deep: true,
+          offset: 30,
+        } as any);
+        const pasteEntity = this.graph.paste()[0];
+
+        pasteEntity.setData(cloneCurEntityData);
+        console.log("pasteEntity: ", pasteEntity);
+      }
+      this.toggleContextMenu(false);
+      curEntity = null;
+    }, 200);
+  };
+
+  private onContextMenu({ e }: { e: MouseEvent }) {
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = 0;
+    }
+    this.updatePosition(e);
+    this.toggleContextMenu(true);
+  }
+
+  delegateEvents() {
+    this.cellView.on("cell:contextmenu", this.onContextMenu, this);
+    return super.delegateEvents();
+  }
+
+  protected onRemove() {
+    this.cellView.off("cell:contextmenu", this.onContextMenu, this);
+  }
+}
+const menu = (
+  <Menu>
+    <Menu.Item key="复制实体">复制实体</Menu.Item>
+    <Menu.Item key="删除">删除</Menu.Item>
+  </Menu>
+);
+
+ContextMenuTool.config({
+  tagName: "div",
+  isSVGElement: false,
+});
+
+Graph.registerNodeTool("contextmenu", ContextMenuTool, true);
 
 Graph.registerNode("table", {
   inherit: "react-shape",
@@ -28,6 +153,18 @@ Graph.registerNode("table", {
       ry: 5,
     },
   },
+  tools: [
+    {
+      name: "contextmenu",
+      args: {
+        menu,
+        onclick({ view }: any) {
+          const node = view.cell;
+          console.log("node: ", node);
+        },
+      },
+    },
+  ],
   component: <Table />,
 });
 
@@ -112,6 +249,10 @@ const ErCanvas = memo(
           pannable: true,
           autoResize: true,
           padding: 20,
+        },
+        clipboard: {
+          enabled: true,
+          useLocalStorage: true,
         },
         selecting: {
           enabled: true,
@@ -241,6 +382,9 @@ const ErCanvas = memo(
       });
       graph.on("edge:connected", (args) => {
         eR.edgeConnected({ args, dataSource: dataSource });
+      });
+      graph.on("node:contextmenu", ({ node }) => {
+        curEntity = node;
       });
     });
     useEffect(() => {

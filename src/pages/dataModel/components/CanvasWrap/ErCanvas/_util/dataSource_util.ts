@@ -394,7 +394,7 @@ export const getEmptyEntity = (fields: any[] = [], properties = {}) => {
     defName: "",
     comment: "",
     properties,
-    nameTemplate: "{defKey}[{defName}]",
+    nameTemplate: "{defKey}({defName})",
     notes: {},
     headers: getFullColumns().map((h) => ({
       freeze: !!(h.newCode === "defKey" || h.newCode === "defName"),
