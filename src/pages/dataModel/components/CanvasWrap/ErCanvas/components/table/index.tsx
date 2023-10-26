@@ -90,12 +90,8 @@ const Table = forwardRef<TableInstance, TableProps>(({ node }, ref) => {
               : ""
           } ${f.primaryKey ? "luban-er-table-body-primary" : ""}`}
         >
-          {[{ refKey: "primaryKey" }]
-            .concat(
-              (data.headers as Header[]).filter(
-                (h) => h.refKey !== "primaryKey"
-              )
-            )
+          {(data.headers as Header[])
+            .filter((h) => h.refKey !== "primaryKey")
             .map((h) => {
               const label = calcFKPKShow({ field: f, header: h });
               return (
@@ -131,12 +127,7 @@ const Table = forwardRef<TableInstance, TableProps>(({ node }, ref) => {
   });
   const body = useMemo(() => {
     return (
-      <div
-        className="luban-er-table-body"
-        style={{
-          background: "#DDE5FF",
-        }}
-      >
+      <div className="luban-er-table-body">
         {renderBody({
           fields: data.fields.slice(0, sliceCount),
           calcWidth: (key) => {
@@ -188,29 +179,27 @@ const Table = forwardRef<TableInstance, TableProps>(({ node }, ref) => {
       className="luban-er-table"
       onDragOver={onDragOver}
       onDrop={onDrop}
-      style={{ color: node.getProp("fontColor") }}
     >
       <Tooltip content={title}>
         <div
           className="luban-er-table-header"
-          style={{ background: node.getProp("fillColor") }}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            padding: "0 10px",
+          }}
         >
-          {linkData.type ? (
-            <a style={{ textDecoration: "underline" }} onClick={nodeClickText}>
-              {title}
-            </a>
-          ) : (
-            title
-          )}
-          {data?.comment && (
-            <Tooltip content={data?.comment}>
-              <div className="luban-er-table-header-icon">
-                <div style={{ borderRightColor: node.getProp("fillColor") }}>
-                  {}
-                </div>
-              </div>
-            </Tooltip>
-          )}
+          <div
+            className="title"
+            style={{
+              maxWidth: "calc(100% - 60px)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {title}
+          </div>
+          <div className="states">未物化</div>
         </div>
       </Tooltip>
       {body}

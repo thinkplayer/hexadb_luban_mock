@@ -150,9 +150,6 @@ export const mapData2Table = ({
         groups,
       });
 
-    const portss =
-      relationType === "entity" ? n.port || commonEntityPorts : ports;
-    console.log("portss: ", portss);
     return {
       ...n,
       size: {
@@ -183,7 +180,7 @@ export const calcNodeData = ({
 }: CalcNodeDataProps) => {
   const size = n.size;
   const preData = n.data;
-  const headers = (nodeData.headers || []).filter((h) => {
+  const headers = (nodeData.headers || []).filter((h: any) => {
     const columnOthers: any =
       (dataSource?.profile?.headers || []).find((c) => c.refKey === h.refKey) ||
       {};
@@ -204,7 +201,7 @@ export const calcNodeData = ({
     notNull: 70, // 非空默认宽度
   };
   const preFields = preData?.fields || [];
-  fields.forEach((f) => {
+  fields.forEach((f: any) => {
     const preF = preFields.find((p) => p.id === f.id);
     Object.keys(f).forEach((fName) => {
       if (!maxWidth[fName]) {
@@ -229,14 +226,14 @@ export const calcNodeData = ({
   });
   // 计算矩形的宽高
   let width =
-    headers.reduce((a, b) => {
+    headers.reduce((a: any, b: any) => {
       return a + (maxWidth[b.refKey] || 10) + 8;
     }, 0) + 16; // 内容宽度加上左侧边距
   if (width < headerWidth) {
     width = headerWidth;
   }
-  // 高度除了字段还包含表名，所以需要字段 +1 同时需要加上上边距
-  const height = (fields.length + 1) * 23 + 8;
+  // 高度除了字段还包含表名，所以需要字段 +1
+  const height = (fields.length + 1) * 36 - 8;
   // 去除重复的字段
   const filterFields = (data: Field[]) => {
     const repeat = [...data];
@@ -248,7 +245,7 @@ export const calcNodeData = ({
   const realHeight = height;
   let sliceCount = -1;
   if (size) {
-    sliceCount = Math.floor((size.height - 31) / 23) * 2;
+    sliceCount = Math.floor((size.height - 31) / 36) * 2;
   }
   const filterFieldsRes = filterFields(fields);
   console.log("filterFieldsRes: ", filterFieldsRes);
@@ -261,12 +258,12 @@ export const calcNodeData = ({
               [
                 {
                   group: "in",
-                  args: { x: 0, y: 38 + i * 23 },
+                  args: { x: 0, y: 48 + i * 36 },
                   id: `${b.defKey}%in`,
                 },
                 {
                   group: "out",
-                  args: { x: 0 + realWidth, y: 38 + i * 23 },
+                  args: { x: 0 + realWidth, y: 48 + i * 36 },
                   id: `${b.defKey}%out`,
                 },
               ],
@@ -295,7 +292,7 @@ export const calcNodeData = ({
   const getRealMaxWidth = (w: MaxWidth) => {
     if (size) {
       const allKeys = Object.keys(w).filter((n) => {
-        headers.some((h) => h.refKey === n);
+        headers.some((h: any) => h.refKey === n);
       });
       const finalWidth = realWidth - 16 - allKeys.length * 8;
       const keysWidth = allKeys.reduce((p, n) => p + w[n], 0);
@@ -405,8 +402,8 @@ export const getEmptyEntity = (fields: any[] = [], properties = {}) => {
       hideInGraph: h.relationNoShow,
     })),
     fields,
-    correlations: [],
-    indexes: [],
+    correlations: [] as any[],
+    indexes: [] as any[],
   };
 };
 

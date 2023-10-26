@@ -1,12 +1,11 @@
 import { Edge } from "@antv/x6";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { OnUpdateProps } from "../tools";
-import { Icon, Tooltip } from "@arco-design/web-react";
+import { Tooltip } from "@arco-design/web-react";
 import OverDown from "../OverDown";
 import ColorEdit from "../ColorEdit";
 import Svg from "../Svg";
 import { IconCheck, IconSwap } from "@arco-design/web-react/icon";
-import { right } from "@antv/x6/lib/registry/port-layout/line";
 export interface EdgeTooltipContentProps {
   id: string;
   position: {

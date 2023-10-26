@@ -22,12 +22,6 @@ interface FilterErCellProps {
   cells: Cell[] | Cell;
 }
 
-interface NodeDbClickProps {
-  e: Event;
-  cell: Cell;
-  dataSource: DataSource;
-}
-
 interface NodeMouseEnterProps {
   node: Node;
   graph?: Graph;

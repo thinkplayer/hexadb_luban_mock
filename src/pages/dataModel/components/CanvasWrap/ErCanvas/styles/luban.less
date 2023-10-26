@@ -3028,15 +3028,16 @@
   border-radius: 5px;
 }
 .luban-er-table-header {
-  padding: 4px 0 4px 0;
+  height: 30px;
+  line-height: 30px;
   font-weight: bold;
   white-space: nowrap;
   text-align: center;
   border-radius: 5px 5px 0 0;
-  background: #dde5ff;
-  border-bottom: 1px solid #dfe3eb;
+  background: #2f6ac7;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: white;
 }
 .luban-er-table-header-icon {
   position: absolute;
@@ -3058,9 +3059,13 @@
   transform: translate(-11px, 5px) rotate(-45deg);
 }
 .luban-er-table-body {
-  height: calc(100% - 27px);
+  height: calc(100% - 30px);
   background: rgba(221, 229, 255, 0.05);
   overflow-y: hidden;
+  border: 1px solid #2f6ac7;
+  border-top: none;
+  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 4px;
 }
 .luban-er-table-body-selected {
   background: #ededed;
@@ -3070,8 +3075,12 @@
 }
 .luban-er-table-body > div {
   white-space: nowrap;
-  height: 23px;
-  padding: 2px 4px 2px 4px;
+  height: 36px;
+  line-height: 36px;
+  padding: 0 4px;
+  &:nth-child(2n) {
+    background-color: #fafafa;
+  }
 }
 .luban-er-table-body > div > span {
   display: inline-block;
