@@ -27,6 +27,7 @@ const CanvasWrap = () => {
 
   const handleSaveEntity = useMemoizedFn(async () => {
     const data = await entityDrawerRef.current.getData();
+    console.log("🚀 ~ file: index.tsx:30 ~ handleSaveEntity ~ data:", data);
     data.fields.forEach((f: any) => {
       f.defKey = f.name;
       f.id = f.name;

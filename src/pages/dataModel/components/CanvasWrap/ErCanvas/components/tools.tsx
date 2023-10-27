@@ -189,7 +189,7 @@ export const edgeNodeAddTool = ({
           t !== "label" && t !== "link" && dataChange && dataChange();
         });
       };
-      const movePositon = {
+      const movePosition = {
         left: canvasContainerRect.left,
         top: canvasContainerRect.top,
       };
@@ -203,7 +203,7 @@ export const edgeNodeAddTool = ({
           id={id}
           edge={edge as Edge}
           position={position}
-          movePosition={movePositon}
+          movePosition={movePosition}
           onUpdate={onUpdate}
           getDataSource={getDataSource}
         />,

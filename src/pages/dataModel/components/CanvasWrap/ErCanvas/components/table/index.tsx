@@ -82,7 +82,7 @@ const Table = forwardRef<TableInstance, TableProps>(({ node }, ref) => {
             validateSelected({ field: f, nodeData: store.data })
               ? "luban-er-table-body-selected"
               : ""
-          } ${f.primaryKey ? "luban-er-table-body-primary" : ""}`}
+          }`}
         >
           {(data.headers as Header[])
             .filter((h) => h.refKey !== "primaryKey")

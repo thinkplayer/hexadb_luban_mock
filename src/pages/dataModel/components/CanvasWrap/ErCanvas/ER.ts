@@ -437,7 +437,7 @@ export default class ER {
     return node.data;
   };
   update = (dataSource: any) => {
-    console.log("update-dataSource: ", dataSource);
+    console.log("🚀 ~ file: ER.ts:440 ~ ER ~ dataSource:", dataSource);
     const cells = this.graph.getCells();
     this.graph.batchUpdate("update", () => {
       cells

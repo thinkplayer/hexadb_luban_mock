@@ -23,7 +23,6 @@ export type MaxWidth = {
 export type DataSource = {
   entities: {
     fields: Field[];
-    viewGroups?: any[];
     [key: string]: any;
   };
   profile: {
@@ -186,14 +185,20 @@ export const calcNodeData = ({
       {};
     return !h.hideInGraph && columnOthers.enabled !== false;
   });
+  // console.log(
+  // "🚀 ~ file: dataSource_util.ts:188 ~ headers ~ headers:",
+  // headers
+  // );
   console.log("headers: ", headers);
   const fields = nodeData.fields || [];
-  const headerText = nodeData.defName;
-  const headerWidth = getTextWidth({
-    text: headerText,
-    fontSize: 12,
-    fontWeight: "bold",
-  });
+  const headerText = nodeData.defName + nodeData.defKey + "未物化";
+  const headerWidth =
+    getTextWidth({
+      text: headerText,
+      fontSize: 12,
+      fontWeight: "bold",
+    }) + 60;
+  // console.log("🚀 ~ file: dataSource_util.ts:196 ~ headerWidth:", headerWidth);
   // 计算每一列最长的内容
   const maxWidth: { [key: string]: any } = {};
   const defaultWidth: any = {
@@ -350,7 +355,7 @@ export const getTextWidth = ({
 };
 
 export const getTitle = (data: any) => {
-  const tempDisplayMode = data.nameTemplate || "{defKey}[{defName}]";
+  const tempDisplayMode = data.nameTemplate || "{defKey}({defName})";
   return tempDisplayMode.replace(/\{(\w+)\}/g, (_match: any, word: any) => {
     return data[word] || data.defKey || "";
   });
@@ -381,21 +386,12 @@ export const getPresetColors = () => {
   ];
 };
 
-export const getEmptyEntity = (fields: any[] = [], properties = {}) => {
+export const getEmptyEntity = (fields: any[] = []) => {
   return {
     id: cuid(),
-    env: {
-      base: {
-        nameSpace: "",
-        codeRoot: "",
-      },
-    },
     defKey: "",
     defName: "",
-    comment: "",
-    properties,
     nameTemplate: "{defKey}({defName})",
-    notes: {},
     headers: getFullColumns().map((h) => ({
       freeze: !!(h.newCode === "defKey" || h.newCode === "defName"),
       refKey: h.newCode,
@@ -410,13 +406,6 @@ export const getEmptyEntity = (fields: any[] = [], properties = {}) => {
 export const getFullColumns = () => {
   return [
     {
-      code: "relationNoShow",
-      value: "关系图",
-      newCode: "hideInGraph",
-      com: "Icon",
-      relationNoShow: true,
-    },
-    {
       code: "name",
       value: "字段代码",
       newCode: "defKey",
@@ -429,97 +418,6 @@ export const getFullColumns = () => {
       newCode: "defName",
       com: "Input",
       relationNoShow: false,
-    },
-    {
-      code: "pk",
-      value: "主键",
-      newCode: "primaryKey",
-      com: "Checkbox",
-      relationNoShow: false,
-    },
-    {
-      code: "notNull",
-      value: "不为空",
-      newCode: "notNull",
-      com: "Checkbox",
-      relationNoShow: true,
-    },
-    {
-      code: "autoIncrement",
-      value: "自增",
-      newCode: "autoIncrement",
-      com: "Checkbox",
-      relationNoShow: true,
-    },
-    {
-      code: "type",
-      value: "数据域",
-      newCode: "domain",
-      com: "Select",
-      relationNoShow: true,
-    },
-    {
-      code: "dataType",
-      value: "数据类型",
-      newCode: "type",
-      com: "Text",
-      relationNoShow: false,
-    },
-    {
-      code: "len",
-      value: "长度",
-      newCode: "len",
-      com: "Input",
-      relationNoShow: false,
-    },
-    {
-      code: "scale",
-      value: "小数位数",
-      newCode: "scale",
-      com: "Input",
-      relationNoShow: false,
-    },
-    {
-      code: "remark",
-      value: "说明",
-      newCode: "comment",
-      com: "Input",
-      relationNoShow: true,
-    },
-    {
-      code: "refDict",
-      value: "数据字典",
-      newCode: "refDict",
-      com: "SearchSelect",
-      relationNoShow: true,
-    },
-    {
-      code: "defaultValue",
-      value: "默认值",
-      newCode: "defaultValue",
-      com: "Input",
-      relationNoShow: true,
-    },
-    {
-      code: "isStandard",
-      value: "标准字段",
-      newCode: "isStandard",
-      com: "label",
-      relationNoShow: false,
-    },
-    {
-      code: "uiHint",
-      value: "UI建议",
-      newCode: "uiHint",
-      com: "Select",
-      relationNoShow: true,
-    },
-    {
-      code: "extProps",
-      value: "拓展属性",
-      newCode: "extProps",
-      com: "linkButton",
-      relationNoShow: true,
     },
   ]; // 完整的头部信息
 };

@@ -72,11 +72,11 @@ function EditableCell(props: any) {
           wrapperCol={{ span: 24 }}
           initialValue={rowData[column.dataIndex]}
           field={column.dataIndex}
+          onChange={cellValueChangeHandler}
         >
           {["type"].includes(column.dataIndex) ? (
             <Select
               allowClear
-              onChange={cellValueChangeHandler}
               placeholder={column.placeholder}
               defaultValue={rowData[column.dataIndex]}
               filterOption={filterOption}

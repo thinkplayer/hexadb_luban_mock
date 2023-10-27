@@ -32,8 +32,8 @@ const EntityDrawer = forwardRef<EntityDrawerInstance, EntityDrawerProps>(
     const getData = useMemoizedFn(async () => {
       const formInfo = await form.validate();
       return {
-        ...formInfo,
         fields: EditableTableRef.current.data,
+        ...formInfo,
       };
     });
 
