@@ -166,7 +166,7 @@ export const edgeNodeAddTool = ({
                   const dataSource = getDataSource();
                   const recentColors = [
                     ...new Set(
-                      (dataSource.profile.recentColors || []).concat(v.hex)
+                      (dataSource?.profile?.recentColors || []).concat(v.hex)
                     ),
                   ];
                   const start =

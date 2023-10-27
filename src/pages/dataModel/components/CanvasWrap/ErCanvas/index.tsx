@@ -418,6 +418,7 @@ const ErCanvas = memo(
       <>
         <div className={styles.ErCanvas} id={id}></div>
         <div id={`${id}-cellTooltip`} />
+        <div id={`${id}-color-picker`} />
       </>
     );
   })

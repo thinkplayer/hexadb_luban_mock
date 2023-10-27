@@ -95,7 +95,7 @@ export default class ER {
   updateDataSource: any;
   container: HTMLElement;
   currentColor = {
-    selected: "#1890FF", // 选中色
+    selected: "#2F6AC7", // 选中色
     border: "#DFE3EB", // 边框色
     fillColor: "#ACDAFC", // 节点和边的背景色
     fontColor: "#000000", // 节点字体色

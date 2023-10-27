@@ -1,8 +1,9 @@
 import ReactDOM from "react-dom";
 import { getPresetColors } from "../../_util/dataSource_util";
-import { Button, Icon } from "@arco-design/web-react";
+import { Button } from "@arco-design/web-react";
 import DragCom from "../DragCom";
 import Colorpicker from "../Colorpicker";
+import { IconPlus } from "@arco-design/web-react/icon";
 
 export interface ColorEditProps {
   onUpdate: any;
@@ -34,7 +35,7 @@ const ColorEdit = ({
   const openPicker = () => {
     const pickerDom = document.getElementById(`${id}-color-picker`);
     // pickerDom.innerHTML = '';
-    pickerDom.setAttribute("class", `luban-node-tooltip-content-color-picker`);
+    pickerDom?.setAttribute("class", `luban-node-tooltip-content-color-picker`);
     const Com = DragCom(Colorpicker);
     const onClose = () => {
       ReactDOM.unmountComponentAtNode(pickerDom);
@@ -103,7 +104,7 @@ const ColorEdit = ({
             onClick={_close}
             className={`luban-node-tooltip-content-color-edit-container-list-item-normal`}
           >
-            <Icon type="fa-plus" />
+            <IconPlus />
           </div>
           {recentColors.map((s: any) => {
             return (
