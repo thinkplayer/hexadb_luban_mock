@@ -33,11 +33,6 @@ const CanvasWrap = () => {
       f.id = f.name;
       f.defName = f.displayName;
     });
-    console.log(
-      "handleSaveEntity-data: ",
-      data,
-      erCanvasRef.current.getDataSource()
-    );
     // TODO 更新源数据中
     console.log("handleSaveEntity-dataSource: ", dataSourceRef.current);
     console.log("handleSaveEntity-currentEntity: ", currentEntity);
@@ -46,6 +41,8 @@ const CanvasWrap = () => {
       dataSourceRef.current.entities.forEach((item) => {
         if (item.id === currentEntity.data.id) {
           item.fields = data.fields;
+          item.defKey = data.name;
+          item.defName = data.displayName;
         }
       });
       erCanvasRef.current.update(dataSourceRef.current);
