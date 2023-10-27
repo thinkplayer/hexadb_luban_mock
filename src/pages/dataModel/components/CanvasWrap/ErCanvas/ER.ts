@@ -400,7 +400,7 @@ export default class ER {
       groups: this.getTableGroup(),
     });
   };
-  addNewEntity = (formData: any) => {
+  addNewEntity(formData: any) {
     const { name, displayName } = formData;
     const empty = {
       ...getEmptyEntity(),
@@ -434,10 +434,10 @@ export default class ER {
       },
     });
     this.graph.addNode(node);
+    this.graph.centerCell(node);
     return node.data;
-  };
+  }
   update = (dataSource: any) => {
-    console.log("🚀 ~ file: ER.ts:440 ~ ER ~ dataSource:", dataSource);
     const cells = this.graph.getCells();
     this.graph.batchUpdate("update", () => {
       cells
@@ -637,6 +637,9 @@ export default class ER {
       edge.attr("line/stroke", this.currentColor.selected, {
         ignoreHistory: true,
       });
+      edge.attr("line/strokeWidth", 2, {
+        ignoreHistory: true,
+      });
       const edgeAttrs = edge.getAttrs();
       console.log("edgeAttrs: ", edgeAttrs);
       edge.attr("line/sourceMarker/fillColor", this.currentColor.selected, {
@@ -645,6 +648,9 @@ export default class ER {
       edge.attr("line/targetMarker/fillColor", this.currentColor.selected, {
         ignoreHistory: true,
       });
+      edge.setLabels("1:n");
+      edge.attr("line/sourceMarker/strokeWidth", 2, { ignoreHistory: true });
+      edge.attr("line/targetMarker/strokeWidth", 2, { ignoreHistory: true });
     }
   };
   edgeLeave = (edge: Edge) => {
@@ -659,6 +665,9 @@ export default class ER {
         edge.getProp("fillColor") || this.currentColor.fillColor,
         { ignoreHistory: true }
       );
+      edge.attr("line/strokeWidth", 1, {
+        ignoreHistory: true,
+      });
       edge.attr(
         "line/sourceMarker/fillColor",
         edge.getProp("fillColor") || this.currentColor.fillColor,
@@ -669,6 +678,9 @@ export default class ER {
         edge.getProp("fillColor") || this.currentColor.fillColor,
         { ignoreHistory: true }
       );
+      edge.removeLabelAt(0);
+      edge.attr("line/sourceMarker/strokeWidth", 1, { ignoreHistory: true });
+      edge.attr("line/targetMarker/strokeWidth", 1, { ignoreHistory: true });
     }
   };
   edgeSelected = (edge: Edge) => {
