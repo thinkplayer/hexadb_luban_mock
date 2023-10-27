@@ -370,7 +370,7 @@ export default class ER {
             fillColor: this.currentColor.fillColor,
           },
           targetMarker: {
-            relation: "1",
+            relation: "n",
             name: "relation",
             fillColor: this.currentColor.fillColor,
           },

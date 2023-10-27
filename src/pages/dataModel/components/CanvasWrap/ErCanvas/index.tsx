@@ -258,9 +258,7 @@ const ErCanvas = memo(
           enabled: true,
           multiple: true,
           rubberband: true,
-          filter(node) {
-            return !node.getProp("isLock");
-          },
+          className: "luban-data-model-selecting",
           modifiers: "alt|ctrl",
         },
         mousewheel: {
@@ -385,6 +383,27 @@ const ErCanvas = memo(
       });
       graph.on("node:contextmenu", ({ node }) => {
         curEntity = node;
+      });
+      graph.on("node:selected", ({ node }) => {
+        console.log("node: ", node);
+        node.attr(
+          "body",
+          {
+            stroke: "#2f6ac7",
+            strokeWidth: 4,
+          },
+          { ignoreHistory: true }
+        );
+      });
+      graph.on("node:unselected", ({ node }) => {
+        node.attr(
+          "body",
+          {
+            stroke: "transparent",
+            strokeWidth: 1,
+          },
+          { ignoreHistory: true }
+        );
       });
     });
     useEffect(() => {

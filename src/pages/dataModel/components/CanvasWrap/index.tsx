@@ -56,6 +56,7 @@ const CanvasWrap = () => {
     }
 
     setEntityDrawerVisible(false);
+    setCurrentEntity(null);
   });
 
   return (
