@@ -65,6 +65,7 @@ class ContextMenuTool extends ToolsView.ToolItem<
     const style = this.knob.style;
     if (e) {
       const pos = this.graph.clientToGraph(e.clientX, e.clientY);
+      console.log("🚀 ~ file: index.tsx:68 ~ updatePosition ~ pos:", pos);
       style.left = `${pos.x}px`;
       style.top = `${pos.y}px`;
     } else {

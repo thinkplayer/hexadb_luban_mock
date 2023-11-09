@@ -171,20 +171,21 @@ export const mapData2Table = ({
   return nodeData;
 };
 
-export const calcNodeData = ({
-  n,
-  nodeData,
-  groups,
-  dataSource,
-}: CalcNodeDataProps) => {
+export const calcNodeData = ({ n, nodeData, groups }: CalcNodeDataProps) => {
   const size = n.size;
   const preData = n.data;
-  const headers = (nodeData.headers || []).filter((h: any) => {
-    const columnOthers: any =
-      (dataSource?.profile?.headers || []).find((c) => c.refKey === h.refKey) ||
-      {};
-    return !h.hideInGraph && columnOthers.enabled !== false;
-  });
+  const headers = [
+    {
+      refKey: "defKey",
+      freeze: false,
+      hideInGraph: false,
+    },
+    {
+      refKey: "defName",
+      freeze: false,
+      hideInGraph: false,
+    },
+  ];
   // console.log(
   // "🚀 ~ file: dataSource_util.ts:188 ~ headers ~ headers:",
   // headers
