@@ -9,7 +9,7 @@ const fileName = path.parse(import.meta.url).name;
 const mockJson = mockjs.mock({
   displayName: "@cword(8,12)",
   name: "@word(8,12)",
-  domainId: "1729481347377209346",
+  domainId: "1730519667902590978",
   "attributes|50-500": [
     {
       id: "@id",

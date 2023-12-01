@@ -3,8 +3,13 @@ import { Buffer } from "node:buffer";
 import path from "path";
 import mockjs from "mockjs";
 import { fileURLToPath } from "url";
+import { createArrayCsvWriter } from "csv-writer";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fileName = path.parse(import.meta.url).name;
+
+const csvData = [];
+const csvHeader = [];
+const csvHeaderType = [];
 
 const mockJson = mockjs.mock({
   displayName: "@ctitle(6,9)",
@@ -70,7 +75,35 @@ const mockJson = mockjs.mock({
       masterDataColumn: null,
       partitionConfigInfo: null,
       attributeId: null,
-      distributionFlag: null,
+      distributionFlag: function () {
+        csvHeader.push(this.name);
+        function getMockData() {
+          return mockjs.mock({
+            date: '@date("yyyy-MM-dd")',
+            timestamp: '@time("HH:mm:ss")',
+            varchar: "@title",
+            int4: "@int",
+            int8: "@int",
+            float4: "float4",
+            float8: "float8",
+            decimal: "decimal",
+            bool: "bool",
+            // "char":"char",
+            text: "text",
+            json: "json",
+            xml: "xml",
+            bytea: "bytea",
+            // "geometry": "geometry",
+          });
+        }
+        // TODO 通过 i 控制要生成的csv数据量
+        for (let i = 0; i < 3; i++) {
+          csvData[i] = csvData[i] ? csvData[i] : [];
+          csvData[i].push(getMockData()[this.dataType]);
+        }
+        csvHeaderType.push(this.dataType);
+        return null;
+      },
     },
   ],
   distribution: {
@@ -80,7 +113,21 @@ const mockJson = mockjs.mock({
   dataImportUrl: "",
 });
 
+/** 生成新增数据表json */
 const data = new Uint8Array(Buffer.from(JSON.stringify(mockJson, null, 2)));
 writeFile(path.resolve(__dirname, `${fileName}.json`), data, (err) => {
   if (err) throw err;
 });
+
+console.log("csvHeaderType: ", csvHeaderType);
+
+/** 生成对应的csv 文件 */
+const csvWriter = createArrayCsvWriter({
+  path: path.resolve(__dirname, `${fileName}.csv`),
+  header: csvHeader,
+});
+csvWriter
+  .writeRecords(csvData) // returns a promise
+  .then(() => {
+    console.log(`写入${fileName}.csv文件成功`);
+  });
