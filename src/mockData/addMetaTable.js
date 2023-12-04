@@ -14,11 +14,11 @@ const csvHeaderType = [];
 const mockJson = mockjs.mock({
   displayName: "@ctitle(6,9)",
   name: "@word(6,30)",
-  ownerId: "1680768588192735233",
-  organizationId: "1689188005510873089",
+  ownerId: "1676216322428604418",
+  organizationId: "1701416798002937858",
   tagIdList: ["TAG-01"],
-  bizSystemId: "1727524019980935169",
-  "columnList|5": [
+  bizSystemId: "1701197222563917825",
+  "columnList|88-500": [
     {
       id: "@id",
       name: "@word(5, 9)",
@@ -35,9 +35,9 @@ const mockJson = mockjs.mock({
         "bool",
         // "char",
         "text",
-        "json",
-        "xml",
-        "bytea",
+        // "json",
+        // "xml",
+        // "bytea",
         // "geometry",
       ],
       dataTypeName: null,
@@ -62,13 +62,13 @@ const mockJson = mockjs.mock({
         }
         return dataPrecision;
       },
-      pkFlag: false,
-      partitionFlag: false,
-      frequentFlag: false,
-      notNullFlag: false,
+      pkFlag: null,
+      partitionFlag: null,
+      frequentFlag: null,
+      notNullFlag: null,
       dataDefault: null,
       description: "@cparagraph(2, 3)",
-      anonymizationAutoFlag: false,
+      anonymizationAutoFlag: null,
       anonymizationRule: null,
       displayOrder: 1,
       masterDataColumnId: null,
@@ -82,14 +82,14 @@ const mockJson = mockjs.mock({
             date: '@date("yyyy-MM-dd")',
             timestamp: '@time("HH:mm:ss")',
             varchar: "@title",
-            int4: "@int",
-            int8: "@int",
-            float4: "float4",
-            float8: "float8",
-            decimal: "decimal",
-            bool: "bool",
+            int4: "@integer(-2147483647, +2147483648)",
+            int8: "@int(-9223372036854775808, +9223372036854775807)",
+            float4: "@float(0, 100, 0, 4)",
+            float8: "@float(0, 100, 8, 8)",
+            decimal: "@float(0, 100, 8, 8)",
+            bool: "@boolean()",
             // "char":"char",
-            text: "text",
+            text: "@paragraph",
             json: "json",
             xml: "xml",
             bytea: "bytea",
@@ -97,7 +97,7 @@ const mockJson = mockjs.mock({
           });
         }
         // TODO 通过 i 控制要生成的csv数据量
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 50; i++) {
           csvData[i] = csvData[i] ? csvData[i] : [];
           csvData[i].push(getMockData()[this.dataType]);
         }
@@ -106,9 +106,7 @@ const mockJson = mockjs.mock({
       },
     },
   ],
-  distribution: {
-    type: "REPLICATION",
-  },
+  description: "@cparagraph(2, 3)",
   partitionConfig: "",
   dataImportUrl: "",
 });
@@ -117,9 +115,8 @@ const mockJson = mockjs.mock({
 const data = new Uint8Array(Buffer.from(JSON.stringify(mockJson, null, 2)));
 writeFile(path.resolve(__dirname, `${fileName}.json`), data, (err) => {
   if (err) throw err;
+  console.log(`写入${fileName}.json文件成功`);
 });
-
-console.log("csvHeaderType: ", csvHeaderType);
 
 /** 生成对应的csv 文件 */
 const csvWriter = createArrayCsvWriter({

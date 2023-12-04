@@ -10,7 +10,7 @@ const mockJson = mockjs.mock({
   displayName: "@cword(8,12)",
   name: "@word(8,12)",
   domainId: "1730519667902590978",
-  "attributes|50-500": [
+  "attributes|2": [
     {
       id: "@id",
       displayName: "@ctitle()",
