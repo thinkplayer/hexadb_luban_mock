@@ -44,6 +44,7 @@
     "eslint-plugin-react-refresh": "^0.4.3",
     "less": "^4.2.0",
     "mockjs": "^1.1.0",
+    "postcss-pxtorem": "^6.0.0",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"
   }
