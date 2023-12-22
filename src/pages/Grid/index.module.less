@@ -1,0 +1,15 @@
+.Grid {
+  .girdWrapper {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    grid-template-rows: repeat(2, 345px);
+
+    .item1 {
+      background-color: #71361d;
+    }
+    .item3 {
+      background-color: #2f90b9;
+      grid-column: 1 / 3;
+    }
+  }
+}
